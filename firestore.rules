@@ -1,0 +1,102 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() { return request.auth != null; }
+    function isValidYm(ym) { return ym is string && ym.matches('^\\d{4}-\\d{2}$'); }
+    function isYYYYMM(id) { return id is string && id.matches('^\\d{6}$'); }
+    // Accept Firestore Timestamp or legacy epoch millis
+    function isTimestamp(n) { return (n is timestamp) || (n is int && n >= 0); }
+    function hasValidService(svc) {
+      return svc is map
+        && svc.done is bool
+        && (svc.done == true ? (('doneAt' in svc) && isTimestamp(svc.doneAt)) : !('doneAt' in svc));
+    }
+
+    // Marketing Checklisten: nur authentifizierte Nutzer, strikte Schema-Validierung
+    match /marketingChecklists/{id} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn()
+        && request.resource.data.customerId is string
+        && isValidYm(request.resource.data.ym)
+        && isTimestamp(request.resource.data.updatedAt)
+        && (
+          !('services' in request.resource.data)
+          || (
+            request.resource.data.services is map
+            && (!('handzettel' in request.resource.data.services) || hasValidService(request.resource.data.services.handzettel))
+            && (!('poster' in request.resource.data.services) || hasValidService(request.resource.data.services.poster))
+            && (!('social' in request.resource.data.services) || hasValidService(request.resource.data.services.social))
+            && (!('newsletter' in request.resource.data.services) || hasValidService(request.resource.data.services.newsletter))
+          )
+        )
+        && (!('updatedAt' in resource.data) || request.resource.data.updatedAt >= resource.data.updatedAt);
+      allow delete: if false; // kein Löschen über die App
+    }
+
+    // Metrics (Umsatz-Zeitreihe): strikte Validierung
+    match /metrics/{monthId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn()
+        && isYYYYMM(request.resource.id)
+        && request.resource.data.keys().hasOnly(['revenue'])
+        && (request.resource.data.revenue is int || request.resource.data.revenue is float)
+        && request.resource.data.revenue >= 0;
+      allow delete: if isSignedIn();
+    }
+
+    // Kunden: authentifiziert + Schema-Validierung
+    match /customers/{id} {
+      allow read: if isSignedIn();
+      // Create requires full schema
+      allow create: if isSignedIn()
+        && request.resource.data.name is string && request.resource.data.name.size() > 0
+        && request.resource.data.branches is int && request.resource.data.branches >= 0
+        && request.resource.data.status in ['aktiv','onboarding','inaktiv']
+        && request.resource.data.marketingActive is bool
+        && (!('baseFee' in request.resource.data) || (request.resource.data.baseFee is int || request.resource.data.baseFee is float))
+        && (!('baseFeeDisabled' in request.resource.data) || request.resource.data.baseFeeDisabled is bool)
+        && (!('notes' in request.resource.data) || request.resource.data.notes is string)
+        && (!('extraServices' in request.resource.data) || (
+          request.resource.data.extraServices is list
+          && request.resource.data.extraServices.every(svc => svc is map
+            && svc.keys().hasOnly(['name','price'])
+            && svc.name is string && svc.name.size() >= 0
+            && (svc.price is int || svc.price is float)
+            && svc.price >= 0)
+        ))
+        && (!('monthlyRevenue' in request.resource.data) || (request.resource.data.monthlyRevenue is int || request.resource.data.monthlyRevenue is float))
+        && (!('createdAt' in request.resource.data) || isTimestamp(request.resource.data.createdAt))
+        && (!('updatedAt' in request.resource.data) || isTimestamp(request.resource.data.updatedAt));
+      // Update allows partial updates with per-field validation
+      allow update: if isSignedIn()
+        && request.resource.data.keys().hasOnly([
+          'name','branches','status','marketingActive','baseFee','baseFeeDisabled','notes','extraServices','monthlyRevenue','createdAt','updatedAt'
+        ])
+        && (!('name' in request.resource.data) || (request.resource.data.name is string && request.resource.data.name.size() > 0))
+        && (!('branches' in request.resource.data) || (request.resource.data.branches is int && request.resource.data.branches >= 0))
+        && (!('status' in request.resource.data) || (request.resource.data.status in ['aktiv','onboarding','inaktiv']))
+        && (!('marketingActive' in request.resource.data) || request.resource.data.marketingActive is bool)
+        && (!('baseFee' in request.resource.data) || (request.resource.data.baseFee is int || request.resource.data.baseFee is float))
+        && (!('baseFeeDisabled' in request.resource.data) || request.resource.data.baseFeeDisabled is bool)
+        && (!('notes' in request.resource.data) || request.resource.data.notes is string)
+        && (!('extraServices' in request.resource.data) || (
+          request.resource.data.extraServices is list
+          && request.resource.data.extraServices.every(svc => svc is map
+            && svc.keys().hasOnly(['name','price'])
+            && svc.name is string && svc.name.size() >= 0
+            && (svc.price is int || svc.price is float)
+            && svc.price >= 0)
+        ))
+        && (!('monthlyRevenue' in request.resource.data) || (request.resource.data.monthlyRevenue is int || request.resource.data.monthlyRevenue is float))
+        && (!('createdAt' in request.resource.data) || isTimestamp(request.resource.data.createdAt))
+        && (!('updatedAt' in resource.data) || request.resource.data.updatedAt >= resource.data.updatedAt);
+      allow delete: if isSignedIn();
+    }
+
+    // Standard: lesen erlaubt, schreiben verboten, bis explizit erlaubt
+    match /{document=**} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+  }
+}
