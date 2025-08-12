@@ -23,9 +23,7 @@ jobs:
         env:
           NEXT_TELEMETRY_DISABLED: 1
         run: npm run build
-      # Prefer Service Account if provided
-      - name: Deploy (Service Account)
-        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BRRY_DASHBOARD_V2 != '' }}
+      - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
@@ -33,22 +31,3 @@ jobs:
           projectId: brry-dashboard-v2
         env:
           FIREBASE_CLI_EXPERIMENTS: webframeworks
-          FIREBASE_DEBUG: "true"
-
-      # Fallback: use FIREBASE_TOKEN (from a user like your Gmail) for preview deploys via CLI
-      - name: Deploy (FIREBASE_TOKEN via CLI)
-        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BRRY_DASHBOARD_V2 == '' && secrets.FIREBASE_TOKEN != '' }}
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-          FIREBASE_CLI_EXPERIMENTS: webframeworks
-          FIREBASE_DEBUG: "true"
-        run: |
-          CHANNEL_ID=pr-${{ github.event.number }}
-          npx firebase-tools@latest hosting:channel:deploy "$CHANNEL_ID" --project brry-dashboard-v2 --json || exit 1
-          echo "Preview channel $CHANNEL_ID deployed."
-
-      # Guard: fail gracefully if no credentials present
-      - name: Missing Firebase credentials
-        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BRRY_DASHBOARD_V2 == '' && secrets.FIREBASE_TOKEN == '' }}
-        run: |
-          echo "::error ::No Firebase credentials provided. Add FIREBASE_SERVICE_ACCOUNT_BRRY_DASHBOARD_V2 (recommended) or FIREBASE_TOKEN to repository secrets." && exit 1
