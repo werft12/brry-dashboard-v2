@@ -125,7 +125,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </header>
-        <main className="mx-auto p-4 md:p-6 max-w-[120rem]">{children}</main>
+        <main className="mx-auto p-4 md:p-6 max-w-[120rem] min-w-0 overflow-x-hidden">{children}</main>
       </div>
     </div>
   );

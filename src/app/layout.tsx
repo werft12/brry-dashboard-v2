@@ -19,6 +19,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   themeColor: "#0b1220",
   applicationName: "BRRY Dashboard",
+  robots: "noindex, nofollow, noarchive, nosnippet",
   icons: {
     icon: [
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },

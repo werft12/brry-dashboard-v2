@@ -10,6 +10,37 @@ import { createCustomer } from "@/lib/db";
 // Optional: nur eine erlaubte E-Mail zulassen
 const ALLOWED_EMAIL = process.env.NEXT_PUBLIC_ALLOWED_EMAIL;
 
+// IP-based rate limiting (simple in-memory store)
+const ipAttempts = new Map<string, { count: number; lastAttempt: number }>();
+const MAX_ATTEMPTS = 10;
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const attempts = ipAttempts.get(ip);
+  
+  if (!attempts) {
+    ipAttempts.set(ip, { count: 1, lastAttempt: now });
+    return true;
+  }
+  
+  // Reset if window expired
+  if (now - attempts.lastAttempt > RATE_LIMIT_WINDOW) {
+    ipAttempts.set(ip, { count: 1, lastAttempt: now });
+    return true;
+  }
+  
+  // Check if limit exceeded
+  if (attempts.count >= MAX_ATTEMPTS) {
+    return false;
+  }
+  
+  // Increment counter
+  attempts.count++;
+  attempts.lastAttempt = now;
+  return true;
+}
+
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();

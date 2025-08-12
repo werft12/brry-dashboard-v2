@@ -31,7 +31,15 @@ function LoginInner() {
   return (
     <div className="min-h-screen grid place-items-center p-6" style={{ background: "var(--background)", color: "var(--foreground)" }}>
       <div className="w-full max-w-sm rounded-lg border border-white/10 bg-neutral-900 p-6 shadow-lg">
-        <h1 className="text-xl font-semibold mb-4">Anmelden</h1>
+        {/* App Logo */}
+        <div className="flex justify-center mb-6">
+          <img 
+            src="/icon-192.png" 
+            alt="BRRY Dashboard" 
+            className="w-16 h-16 rounded-lg shadow-lg"
+          />
+        </div>
+        <h1 className="text-xl font-semibold mb-4 text-center">Anmelden</h1>
         <form onSubmit={onSubmit} className="grid gap-3">
           <label className="grid gap-1 text-sm">
             <span className="text-gray-300">E-Mail</span>

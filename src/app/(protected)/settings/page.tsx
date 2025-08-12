@@ -135,9 +135,9 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg md:text-xl font-semibold tracking-tight">Einstellungen</h1>
+    <div className="grid gap-6">
+      <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-3">
+        <h1 className="text-2xl font-semibold tracking-tight text-center sm:text-left">Einstellungen</h1>
         <div className="flex items-center gap-3">
           {saving && <div className="text-xs text-white/60">Speichere…</div>}
           {justSaved && !saving && (

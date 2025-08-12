@@ -152,7 +152,7 @@ export default function OnboardingPage() {
   return (
     <div className="grid gap-6">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h1 className="text-2xl font-semibold">Onboarding</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-center sm:text-left">Onboarding</h1>
         <button onClick={() => setShowCreate(true)} className="h-10 px-4 rounded-md border border-white/10 bg-neutral-800 text-gray-100 hover:bg-neutral-700 shrink-0">Neue Apotheke</button>
       </div>
 

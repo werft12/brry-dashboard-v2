@@ -228,9 +228,9 @@ export default function CustomersPage() {
   }
 
   return (
-    <div className="w-full box-border grid gap-6 px-[6px] sm:px-[10px] md:px-[14px] lg:px-[20px] overflow-x-hidden text-[0.95rem] sm:text-base max-[380px]:text-[0.9rem]">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Kunden</h1>
+    <div className="grid gap-6 min-w-0 overflow-x-hidden">
+      <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-3">
+        <h1 className="text-2xl font-semibold tracking-tight text-center sm:text-left">Kunden</h1>
         <div className="hidden sm:flex items-center gap-2 text-xs text-gray-400">
           <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-teal-400 inline-block"/>Basis</span>
           <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-sky-400 inline-block"/>Marketing</span>

@@ -398,9 +398,9 @@ export default function MarketingPage() {
   }
 
   return (
-    <div className="grid gap-6">
-      <div className="sticky top-0 z-20 -mx-2 sm:mx-0 px-2 sm:px-0 py-2 bg-neutral-950/70 supports-[backdrop-filter]:backdrop-blur backdrop-blur border-b border-white/5 flex items-center justify-between gap-3 flex-wrap">
-        <h1 className="text-2xl font-semibold">Marketing-Services</h1>
+    <div className="grid gap-6 min-w-0 overflow-x-hidden">
+      <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-3">
+        <h1 className="text-2xl font-semibold tracking-tight text-center sm:text-left">Marketing-Services</h1>
         <div className="flex items-center gap-2">
           <button onClick={() => changeMonth(-1)} className="h-10 px-3 rounded-md border border-white/10 hover:bg-neutral-800">←</button>
           <div className="px-3 py-2 rounded-md border border-white/10 bg-neutral-900 tabular-nums">{ymToLabel(ym)}</div>
@@ -455,12 +455,12 @@ export default function MarketingPage() {
         const toggleExpand = () => setExpanded((prev) => ({ ...prev, [c.id]: !(prev[c.id] ?? false) }));
 
         return (
-          <Card key={c.id} className="p-3">
+          <Card key={c.id} className="p-3 min-w-0 overflow-hidden">
             {/* Header als Toggle */}
             <button
               type="button"
               onClick={toggleExpand}
-              className="w-full flex items-center justify-between gap-3 mb-2 text-left hover:bg-white/5 rounded-md px-3 pt-3 pb-2 transition-colors"
+              className="w-full flex items-center justify-between gap-3 mb-2 text-left hover:bg-white/5 rounded-md px-3 pt-3 pb-2 transition-colors min-w-0"
               title={`${doneCount}/${totalCount} erledigt`}
             >
               <div className="min-w-0 flex items-center">
@@ -480,7 +480,7 @@ export default function MarketingPage() {
 
             {/* Body */}
             {isExpanded && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 mt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mt-1 px-1">
                 {SERVICES.map(({ key, label }) => {
                   const local = localStateRef.current[c.id];
                   const svc = cl?.services?.[key];
@@ -491,7 +491,7 @@ export default function MarketingPage() {
                   return (
                     <label
                       key={key}
-                      className={`flex items-center justify-between gap-2 rounded-md px-2.5 py-1.5 transition-colors hover:border-white/20 text-sm ${checked ? 'border border-emerald-500/30 bg-emerald-500/10' : 'border border-white/10 bg-neutral-900'}`}
+                      className={`flex items-center justify-between gap-2 rounded-md px-2.5 py-1.5 transition-colors hover:border-white/20 text-sm min-w-0 ${checked ? 'border border-emerald-500/30 bg-emerald-500/10' : 'border border-white/10 bg-neutral-900'}`}
                     >
                       <span className="flex min-w-0 flex-col">
                         <span className="flex items-center gap-2">
@@ -520,7 +520,7 @@ export default function MarketingPage() {
                   return (
                     <label
                       key={`custom-${key}`}
-                      className={`flex items-center justify-between gap-2 rounded-md px-2.5 py-1.5 transition-colors hover:border-white/20 text-sm ${checked ? 'border border-emerald-500/30 bg-emerald-500/10' : 'border border-white/10 bg-neutral-900'}`}
+                      className={`flex items-center justify-between gap-2 rounded-md px-2.5 py-1.5 transition-colors hover:border-white/20 text-sm min-w-0 ${checked ? 'border border-emerald-500/30 bg-emerald-500/10' : 'border border-white/10 bg-neutral-900'}`}
                     >
                       <span className="flex min-w-0 flex-col">
                         <span className="flex items-center gap-2">

@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /
+
+# BRRY Dashboard - Private Business Application
+# No indexing allowed

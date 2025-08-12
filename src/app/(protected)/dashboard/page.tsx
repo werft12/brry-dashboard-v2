@@ -224,7 +224,7 @@ export default function DashboardPage() {
 
   return (
     <div className="grid gap-6">
-      <h1 className="text-2xl font-semibold tracking-tight">BRRY Dashboard</h1>
+      <h1 className="text-2xl font-semibold tracking-tight text-center sm:text-left">BRRY Dashboard</h1>
 
       {/* KPI-Karten */}
       <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">

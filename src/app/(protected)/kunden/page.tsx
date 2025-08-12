@@ -60,8 +60,8 @@ export default function KundenPage() {
 
   return (
     <div className="grid gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Kundenübersicht</h1>
+      <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-3">
+        <h1 className="text-2xl font-semibold tracking-tight text-center sm:text-left">Kundenübersicht</h1>
         <button onClick={() => setShowCreate(true)} className="h-10 px-4 rounded-md border border-white/10 bg-neutral-800 text-gray-100 hover:bg-neutral-700">Neue Apotheke</button>
       </div>
 

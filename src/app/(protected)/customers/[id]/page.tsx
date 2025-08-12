@@ -84,8 +84,8 @@ export default function CustomerDetailsPage() {
 
   return (
     <div className="grid gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Kunde</h1>
+      <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-3">
+        <h1 className="text-2xl font-semibold tracking-tight text-center sm:text-left">Kunde</h1>
         <button
           onClick={() => router.back()}
           className="text-sm rounded-md px-3.5 py-1.5 border border-white/10 text-gray-300 hover:text-white hover:border-white/20 transition-colors"

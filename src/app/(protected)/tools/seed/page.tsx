@@ -56,8 +56,8 @@ export default function SeedPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto mt-10 space-y-4">
-      <h1 className="text-2xl font-semibold">Tools: Seed-Daten</h1>
+    <div className="grid gap-6">
+      <h1 className="text-2xl font-semibold text-center sm:text-left">Tools: Seed-Daten</h1>
       <p className="text-sm text-gray-400">
         Legt 3 Beispielkunden an (einmalig). Erfordert Login.
       </p>
