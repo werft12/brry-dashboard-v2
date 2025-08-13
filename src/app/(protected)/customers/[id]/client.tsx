@@ -28,8 +28,8 @@ export default function CustomerDetailsClient() {
   const costs = useMemo(() => {
     if (!customer) return { base: 0, marketing: 0, extras: 0, total: 0 } as { base: number; marketing: number; extras: number; total: number };
     const base = monthlyCustomerFee(customer.status === "aktiv");
-    const marketing = customer.marketing ? priceMarketingForSubscription(customer.subscription) : 0;
-    const extras = (customer.extraServices || []).reduce((acc, s) => acc + s.monthlyPrice, 0);
+    const marketing = customer.marketingActive ? priceMarketingForSubscription(customer.branches) : 0;
+    const extras = (customer.extraServices || []).reduce((acc, s) => acc + s.price, 0);
     return { base, marketing, extras, total: base + marketing + extras };
   }, [customer]);
 
@@ -164,17 +164,15 @@ export default function CustomerDetailsClient() {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Abo-Typ</label>
-              <select
-                value={customer.subscription}
-                onChange={(e) => handleUpdate({ subscription: e.target.value as Customer["subscription"] })}
+              <label className="block text-sm font-medium text-gray-300 mb-1">Filialen</label>
+              <input
+                type="number"
+                value={customer.branches || 1}
+                onChange={(e) => handleUpdate({ branches: parseInt(e.target.value) || 1 })}
                 disabled={pending}
+                min="1"
                 className="w-full px-3 py-2 bg-neutral-800 border border-white/10 rounded-md text-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500"
-              >
-                <option value="basis">Basis</option>
-                <option value="premium">Premium</option>
-                <option value="enterprise">Enterprise</option>
-              </select>
+              />
             </div>
           </div>
 
@@ -182,8 +180,8 @@ export default function CustomerDetailsClient() {
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
-                checked={customer.marketing || false}
-                onChange={(e) => handleUpdate({ marketing: e.target.checked })}
+                checked={customer.marketingActive || false}
+                onChange={(e) => handleUpdate({ marketingActive: e.target.checked })}
                 disabled={pending}
                 className="rounded border-white/10 bg-neutral-800 text-teal-500 focus:ring-teal-500"
               />
@@ -204,7 +202,7 @@ export default function CustomerDetailsClient() {
             </div>
             <div className="text-center p-3 bg-neutral-800 rounded-lg">
               <div className="text-sm text-gray-400">Marketing</div>
-              <div className="text-lg font-semibold text-white">{customer.marketing ? formatEUR(costs.marketing) : "—"}</div>
+              <div className="text-lg font-semibold text-white">{customer.marketingActive ? formatEUR(costs.marketing) : "—"}</div>
             </div>
             <div className="text-center p-3 bg-neutral-800 rounded-lg">
               <div className="text-sm text-gray-400">Extras</div>
@@ -249,7 +247,7 @@ export default function CustomerDetailsClient() {
 
           {customer.createdAt && (
             <div className="text-sm text-gray-400">
-              Erstellt: {new Date(customer.createdAt.seconds * 1000).toLocaleDateString('de-DE')}
+              Erstellt: {new Date(customer.createdAt * 1000).toLocaleDateString('de-DE')}
             </div>
           )}
         </div>
@@ -267,7 +265,7 @@ export default function CustomerDetailsClient() {
                 if (name && priceStr) {
                   const price = parseFloat(priceStr);
                   if (!isNaN(price)) {
-                    handleAddExtraService({ name, monthlyPrice: price });
+                    handleAddExtraService({ name, price });
                   }
                 }
               }}
@@ -284,7 +282,7 @@ export default function CustomerDetailsClient() {
                 <div key={i} className="flex items-center justify-between p-3 bg-neutral-800 rounded-lg">
                   <div>
                     <div className="font-medium">{s.name}</div>
-                    <div className="text-sm text-gray-400">{formatEUR(s.monthlyPrice)}/Monat</div>
+                    <div className="text-sm text-gray-400">{formatEUR(s.price)}/Monat</div>
                   </div>
                   <button
                     onClick={() => handleRemoveExtraService(i)}
