@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 
+// Configure for static export
+export const dynamic = 'force-static';
+export const revalidate = false;
+
 // Return empty sitemap to discourage crawling
 export async function GET() {
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
