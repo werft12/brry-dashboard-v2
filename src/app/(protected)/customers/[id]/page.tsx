@@ -6,6 +6,12 @@ import type { Customer, ExtraService } from "@/lib/types";
 import { listenCustomers, updateCustomer, deleteCustomer } from "@/lib/db";
 import { formatEUR, monthlyCustomerFee, priceMarketingForSubscription } from "@/lib/pricing";
 
+// Generate static params for static export
+export async function generateStaticParams() {
+  // Return empty array for static export - pages will be generated on demand
+  return [];
+}
+
 export default function CustomerDetailsPage() {
   const params = useParams();
   const router = useRouter();
