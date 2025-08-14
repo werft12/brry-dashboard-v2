@@ -14,6 +14,8 @@ export default function CustomerDetailsClient() {
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [newName, setNewName] = useState("");
 
   useEffect(() => {
     const unsub = listenCustomers((list) => {
@@ -77,6 +79,22 @@ export default function CustomerDetailsClient() {
       console.error("Delete failed:", error);
       setPending(false);
     }
+  };
+
+  const handleStartEditName = () => {
+    setNewName(customer?.name || "");
+    setEditingName(true);
+  };
+
+  const handleSaveName = async () => {
+    if (!customer || !newName.trim() || pending) return;
+    await handleUpdate({ name: newName.trim() });
+    setEditingName(false);
+  };
+
+  const handleCancelEditName = () => {
+    setEditingName(false);
+    setNewName("");
   };
 
   if (loading) {
@@ -250,6 +268,59 @@ export default function CustomerDetailsClient() {
               Erstellt: {new Date(customer.createdAt * 1000).toLocaleDateString('de-DE')}
             </div>
           )}
+        </div>
+      </Card>
+
+      {/* Einstellungen */}
+      <Card>
+        <div className="space-y-4">
+          <h2 className="text-lg font-medium">Einstellungen</h2>
+          
+          {/* Kundenname bearbeiten */}
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-gray-300">Kundenname</label>
+            {editingName ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  disabled={pending}
+                  className="flex-1 px-3 py-2 bg-neutral-800 border border-white/10 rounded-md text-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  placeholder="Kundenname eingeben..."
+                  autoFocus
+                />
+                <button
+                  onClick={handleSaveName}
+                  disabled={pending || !newName.trim()}
+                  className="px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-md disabled:opacity-50 text-sm"
+                >
+                  Speichern
+                </button>
+                <button
+                  onClick={handleCancelEditName}
+                  disabled={pending}
+                  className="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md disabled:opacity-50 text-sm"
+                >
+                  Abbrechen
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between p-3 bg-neutral-800 rounded-lg">
+                <div>
+                  <div className="font-medium">{customer.name}</div>
+                  <div className="text-sm text-gray-400">Aktueller Kundenname</div>
+                </div>
+                <button
+                  onClick={handleStartEditName}
+                  disabled={pending}
+                  className="px-3 py-1 text-sm bg-gray-600 hover:bg-gray-700 text-white rounded-md disabled:opacity-50"
+                >
+                  Bearbeiten
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </Card>
 

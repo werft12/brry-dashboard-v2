@@ -5,7 +5,8 @@ const nextConfig: NextConfig = {
     // Allow deploys even if there are ESLint errors (we'll fix them iteratively)
     ignoreDuringBuilds: true,
   },
-  output: 'export',
+  // Static export disabled for development to allow middleware
+  // output: 'export',
   trailingSlash: true,
   images: {
     unoptimized: true

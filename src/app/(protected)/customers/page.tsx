@@ -19,9 +19,12 @@ export default function CustomersPage() {
   const [status, setStatus] = useState<"all" | "aktiv" | "onboarding" | "inaktiv">("all");
   const [sortKey, setSortKey] = useState<"name" | "status" | "kosten" | "branches" | "marketing" | "revenue">("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [showSortPanel, setShowSortPanel] = useState(false);
   const [pending, setPending] = useState<Record<string, boolean>>({});
   const [saved, setSaved] = useState<Record<string, boolean>>({});
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [editingNameId, setEditingNameId] = useState<string | null>(null);
+  const [newName, setNewName] = useState("");
   const [onboardings, setOnboardings] = useState<OnboardingEntry[]>([]);
   const [app, setApp] = useState<AppSettings | undefined>(undefined);
 
@@ -209,12 +212,30 @@ export default function CustomersPage() {
     } finally {
       setPending((p) => ({ ...p, [id]: false }));
     }
-  }
+  };
+
+  const handleStartEditName = (id: string, currentName: string) => {
+    setEditingNameId(id);
+    setNewName(currentName);
+  };
+
+  const handleSaveName = async (id: string) => {
+    if (!newName.trim() || pending[id]) return;
+    await saveCustomer(id, { name: newName.trim() });
+    setEditingNameId(null);
+    setNewName("");
+  };
+
+  const handleCancelEditName = () => {
+    setEditingNameId(null);
+    setNewName("");
+  };
 
   function addExtraService(c: Customer) {
     const next = [...(c.extraServices || []), { name: "", price: 0 }];
     saveCustomer(c.id, { extraServices: next as any });
   }
+
   function updateExtraService(c: Customer, idx: number, patch: { name?: string; price?: number }) {
     const list = [...(c.extraServices || [])];
     const curr = list[idx] || { name: "", price: 0 };
@@ -239,87 +260,124 @@ export default function CustomersPage() {
       </div>
 
       {/* KPI-Karten: Basis, Marketing, Gesamt */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-        <Card className="p-4">
-          <div className="text-xs text-gray-400">Basis (Kunden)</div>
-          <div className="mt-1 text-2xl font-semibold text-white tracking-tight">
-            {loading ? <div className="h-7 w-20 rounded bg-white/10 animate-pulse" /> : formatEUR(totalMonthly.base)}
-          </div>
-          <div className="mt-2 text-xs text-gray-500">{Number(app?.pricing?.baseFeeAmount) || 50}€ pro aktivem Kunden (sofern nicht deaktiviert)</div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-xs text-gray-400">Marketing</div>
-          <div className="mt-1 text-2xl font-semibold text-white tracking-tight">
-            {loading ? <div className="h-7 w-24 rounded bg-white/10 animate-pulse" /> : formatEUR(totalMonthly.marketing)}
-          </div>
-          <div className="mt-2 text-xs text-gray-500">
-            {totalMonthly.masterLayoutBase > 0 ? (
-              <span>inkl. 240€ Masterlayouts + Filialpreise + Zusatzservices</span>
-            ) : (
-              <span>Filialpreise + Zusatzservices</span>
-            )}
+      <section className="grid grid-cols-3 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        <Card className="p-3 sm:p-4">
+          <div className="text-center sm:text-left">
+            <div className="text-xs text-gray-400">Basis</div>
+            <div className="mt-1 text-sm sm:text-2xl font-semibold text-white tracking-tight">
+              {loading ? <div className="h-4 w-10 sm:h-7 sm:w-20 rounded bg-white/10 animate-pulse mx-auto sm:mx-0" /> : formatEUR(totalMonthly.base)}
+            </div>
+            <div className="mt-1 text-xs text-gray-500">{Number(app?.pricing?.baseFeeAmount) || 50}€ pro Kunde</div>
           </div>
         </Card>
-        <Card className="p-4">
-          <div className="text-xs text-gray-400">Gesamt pro Monat</div>
-          <div className="mt-1 text-2xl font-semibold text-white tracking-tight">
-            {loading ? <div className="h-7 w-24 rounded bg-white/10 animate-pulse" /> : formatEUR(totalMonthly.total)}
+        <Card className="p-3 sm:p-4">
+          <div className="text-center sm:text-left">
+            <div className="text-xs text-gray-400">Marketing</div>
+            <div className="mt-1 text-sm sm:text-2xl font-semibold text-white tracking-tight">
+              {loading ? <div className="h-4 w-12 sm:h-7 sm:w-24 rounded bg-white/10 animate-pulse mx-auto sm:mx-0" /> : formatEUR(totalMonthly.marketing)}
+            </div>
+            <div className="mt-1 text-xs text-gray-500">
+              {totalMonthly.masterLayoutBase > 0 ? (
+                <span>inkl. Layouts + Services</span>
+              ) : (
+                <span>Filial + Services</span>
+              )}
+            </div>
           </div>
-          <div className="mt-2 text-xs text-gray-500 flex items-center gap-3">
-            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-teal-400 inline-block"/>Basis</span>
-            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-sky-400 inline-block"/>Marketing</span>
+        </Card>
+        <Card className="p-3 sm:p-4">
+          <div className="text-center sm:text-left">
+            <div className="text-xs text-gray-400">Gesamt</div>
+            <div className="mt-1 text-sm sm:text-2xl font-semibold text-white tracking-tight">
+              {loading ? <div className="h-4 w-12 sm:h-7 sm:w-24 rounded bg-white/10 animate-pulse mx-auto sm:mx-0" /> : formatEUR(totalMonthly.total)}
+            </div>
+            <div className="mt-1 text-xs text-gray-500 flex items-center gap-1 flex-wrap justify-center sm:justify-start">
+              <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-teal-400 inline-block"/>Basis</span>
+              <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-sky-400 inline-block"/>Marketing</span>
+            </div>
           </div>
         </Card>
       </section>
 
       {/* Controls */}
-      <Card className="w-full max-w-full min-w-0 box-border px-[16px] py-[12px] sm:px-[18px] sm:py-[14px] mx-[4px] sm:mx-0">
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:items-center text-[0.95rem] sm:text-base min-w-0">
+      <Card className="w-full max-w-full min-w-0 box-border px-3 py-3 sm:px-4 sm:py-3 mx-[4px] sm:mx-0">
+        <div className="flex flex-col gap-3 text-sm min-w-0">
+          {/* Suchfeld - volle Breite */}
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Suche nach Kundenname…"
-            className="w-full sm:max-w-xs h-9 sm:h-10 rounded-md bg-white/5 border border-white/10 px-3 text-[0.95rem] sm:text-base text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500/40"
+            className="w-full h-8 rounded-lg bg-white/5 border border-white/10 px-3 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-500/40"
           />
-          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto whitespace-nowrap min-w-0">
-            {(["all","aktiv","onboarding","inaktiv"] as const).map((s) => (
-              <button
-                key={s}
-                onClick={() => setStatus(s)}
-                className={`text-sm sm:text-base max-[380px]:text-xs rounded-full px-2.5 py-1 sm:px-3 py-1.5 max-[380px]:px-2.5 border transition-colors shrink-0 ${
-                  status === s
-                    ? "bg-white/10 text-white border-white/30"
-                    : "text-gray-400 border-white/10 hover:text-gray-200 hover:border-white/20"
-                }`}
-              >
-                {s === "all" ? "Alle" : s === "inaktiv" ? "Inaktiv" : s.charAt(0).toUpperCase() + s.slice(1)}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-1.5 sm:gap-2 sm:ml-auto overflow-x-auto whitespace-nowrap min-w-0">
-            <select
-              value={sortKey}
-              onChange={(e) => setSortKey(e.target.value as any)}
-              className="h-9 sm:h-10 text-[0.95rem] sm:text-base rounded-md bg-white/5 border border-white/10 px-2 sm:px-2.5 py-1.5 text-gray-300"
-            >
-              <option value="name">Name</option>
-              <option value="status">Status</option>
-              <option value="kosten">Kosten</option>
-              <option value="branches">Filialen</option>
-              <option value="marketing">Marketing</option>
-              <option value="revenue">Umsatz/Monat</option>
-            </select>
+          
+          {/* Filter und Sortier-Button - zentriert */}
+          <div className="flex items-center justify-center gap-3">
+            {/* Status Filter - zentriert */}
+            <div className="flex items-center justify-center gap-1.5">
+              {(["all","aktiv","onboarding","inaktiv"] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setStatus(s)}
+                  className={`text-xs sm:text-sm rounded-full px-3 py-1.5 border transition-all duration-200 shrink-0 ${
+                    status === s
+                      ? "bg-white/10 text-white border-white/30 shadow-sm"
+                      : "text-gray-400 border-white/10 hover:text-gray-200 hover:border-white/20 hover:bg-white/5"
+                  }`}
+                >
+                  {s === "all" ? "Alle" : s === "inaktiv" ? "Inaktiv" : s.charAt(0).toUpperCase() + s.slice(1)}
+                </button>
+              ))}
+            </div>
+            
+            {/* Sortier-Button */}
             <button
-              onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
-              className="h-9 sm:h-10 aspect-square text-[0.95rem] sm:text-base rounded-md px-2 py-1.5 border border-white/10 text-gray-300 hover:text-white hover:border-white/20 transition-colors"
-              aria-label="Sortierreihenfolge umschalten"
-              title={sortDir === "asc" ? "Aufsteigend" : "Absteigend"}
+              onClick={() => setShowSortPanel(!showSortPanel)}
+              className={`h-8 w-8 text-sm rounded-lg border transition-all duration-200 flex items-center justify-center ${
+                showSortPanel
+                  ? "bg-white/10 text-white border-white/30 shadow-sm"
+                  : "text-gray-400 border-white/10 hover:text-gray-200 hover:border-white/20 hover:bg-white/5"
+              }`}
+              aria-label="Sortierung anzeigen"
+              title="Sortierung"
             >
-              {sortDir === "asc" ? "↑" : "↓"}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+              </svg>
             </button>
           </div>
         </div>
       </Card>
+
+      {/* Ausklappbares Sortier-Panel */}
+      {showSortPanel && (
+        <div className="mt-0.5 px-1 sm:px-0">
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-center justify-center">
+            <div className="text-sm text-gray-400 font-medium">Sortieren nach:</div>
+            <div className="flex items-center gap-2">
+              <select
+                value={sortKey}
+                onChange={(e) => setSortKey(e.target.value as any)}
+                className="h-8 text-sm rounded-lg bg-white/5 border border-white/10 px-2.5 py-1 text-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-500/40"
+              >
+                <option value="name">Name</option>
+                <option value="status">Status</option>
+                <option value="kosten">Kosten</option>
+                <option value="branches">Filialen</option>
+                <option value="marketing">Marketing</option>
+                <option value="revenue">Umsatz/Monat</option>
+              </select>
+              <button
+                onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+                className="h-8 w-8 text-sm rounded-lg border border-white/10 text-gray-300 hover:text-white hover:border-white/20 hover:bg-white/5 transition-all duration-200 flex items-center justify-center"
+                aria-label="Sortierreihenfolge umschalten"
+                title={sortDir === "asc" ? "Aufsteigend" : "Absteigend"}
+              >
+                {sortDir === "asc" ? "↑" : "↓"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Sortierleiste über der Kundenliste */}
       <div className="mt-3 hidden sm:block">
@@ -572,10 +630,47 @@ export default function CustomersPage() {
                             ))}
                           </div>
                         </div>
-                        <div className="mt-4 flex justify-end sm:col-span-2">
+                        <div className="mt-4 flex justify-end gap-2 sm:col-span-2">
+                          {/* Kundenname bearbeiten */}
+                          {editingNameId === c.id ? (
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                value={newName}
+                                onChange={(e) => setNewName(e.target.value)}
+                                disabled={!!pending[c.id]}
+                                className="h-8 rounded-md bg-white/5 border border-white/10 px-2 text-white text-sm hover:border-white/20 disabled:opacity-50"
+                                placeholder="Kundenname..."
+                                autoFocus
+                              />
+                              <button
+                                onClick={() => handleSaveName(c.id)}
+                                disabled={!!pending[c.id] || !newName.trim()}
+                                className="text-sm rounded-md px-3 py-1.5 border border-teal-500/30 text-teal-300 hover:border-teal-400/50 hover:text-teal-200 disabled:opacity-50"
+                              >
+                                Speichern
+                              </button>
+                              <button
+                                onClick={handleCancelEditName}
+                                disabled={!!pending[c.id]}
+                                className="text-sm rounded-md px-3 py-1.5 border border-gray-500/30 text-gray-300 hover:border-gray-400/50 hover:text-gray-200 disabled:opacity-50"
+                              >
+                                Abbrechen
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => handleStartEditName(c.id, c.name)}
+                              disabled={!!pending[c.id]}
+                              className="text-sm rounded-md px-3.5 py-1.5 border border-blue-500/30 text-blue-300 hover:border-blue-400/50 hover:text-blue-200 disabled:opacity-50"
+                            >
+                              Name bearbeiten
+                            </button>
+                          )}
+                          
                           <button
                             onClick={() => {
-                              if (confirm(`Kunden „${c.name}” wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`)) {
+                              if (confirm(`Kunden „${c.name}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`)) {
                                 import("@/lib/db").then(({ deleteCustomer }) => deleteCustomer(c.id));
                               }
                             }}

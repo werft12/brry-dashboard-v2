@@ -1,5 +1,5 @@
 "use client";
-import { collection, deleteField, doc, onSnapshot, query, setDoc, where, getDocs } from "firebase/firestore";
+import { collection, deleteField, doc, getDoc, onSnapshot, orderBy, query, setDoc, where, serverTimestamp, updateDoc, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 export type MarketingServiceKey = "handzettel" | "poster" | "social" | "newsletter";
@@ -84,6 +84,8 @@ export async function setMarketingServices(
 export interface ServiceState {
   done: boolean;
   doneAt?: number;
+  prepared?: boolean;
+  preparedAt?: number;
   assignedTo?: string;
   notes?: string;
 }
@@ -113,12 +115,22 @@ export function listenMarketingChecklistForMonth(
         let doneAt: number | undefined = undefined;
         if (v?.doneAt?.seconds) doneAt = v.doneAt.seconds * 1000;
         else if (typeof v?.doneAt === "number") doneAt = v.doneAt;
-        return {
+        let preparedAt: number | undefined = undefined;
+        if (v?.preparedAt?.seconds) preparedAt = v.preparedAt.seconds * 1000;
+        else if (typeof v?.preparedAt === "number") preparedAt = v.preparedAt;
+        const result = {
           done: !!v?.done,
           doneAt,
+          prepared: v?.prepared === true,
+          preparedAt,
           assignedTo: v?.assignedTo,
           notes: v?.notes,
         };
+        // Debug logging for prepared state
+        if (v?.prepared !== undefined) {
+          console.log("🔍 Firestore normalize prepared:", { raw: v?.prepared, normalized: result.prepared, fullObject: v });
+        }
+        return result;
       };
       const normalizeCustom = (obj: any): Record<string, CustomServiceState> => {
         const out: Record<string, CustomServiceState> = {};
@@ -142,7 +154,9 @@ export function listenMarketingChecklistForMonth(
         customerId: data.customerId,
         ym: data.ym,
         services,
-        custom: normalizeCustom(data?.services?.custom),
+        // Read custom services from the correct root path `custom.*`.
+        // Keep backward compatibility with legacy `services.custom`.
+        custom: normalizeCustom(data?.custom ?? data?.services?.custom),
         updatedAt: data?.updatedAt?.seconds ? data.updatedAt.seconds * 1000 : (typeof data?.updatedAt === 'number' ? data.updatedAt : 0),
       };
     });
@@ -165,9 +179,14 @@ export function listenMarketingChecklist(
       let doneAt: number | undefined = undefined;
       if (v?.doneAt?.seconds) doneAt = v.doneAt.seconds * 1000;
       else if (typeof v?.doneAt === "number") doneAt = v.doneAt;
+      let preparedAt: number | undefined = undefined;
+      if (v?.preparedAt?.seconds) preparedAt = v.preparedAt.seconds * 1000;
+      else if (typeof v?.preparedAt === "number") preparedAt = v.preparedAt;
       return {
         done: !!v?.done,
         doneAt,
+        prepared: v?.prepared === true,
+        preparedAt,
         assignedTo: v?.assignedTo,
         notes: v?.notes,
       };
@@ -194,7 +213,9 @@ export function listenMarketingChecklist(
       customerId: data.customerId,
       ym: data.ym,
       services,
-      custom: normalizeCustom(data?.services?.custom),
+      // Read custom services from the correct root path `custom.*`.
+      // Keep backward compatibility with legacy `services.custom`.
+      custom: normalizeCustom(data?.custom ?? data?.services?.custom),
       updatedAt: data?.updatedAt?.seconds ? data.updatedAt.seconds * 1000 : (typeof data?.updatedAt === 'number' ? data.updatedAt : 0),
     });
   });
@@ -284,4 +305,216 @@ export async function setMarketingServiceMeta(
     } as any,
     { merge: true }
   );
+}
+// Two-checkbox system functions
+export async function setMarketingServicePrepared(customerId: string, ym: string, service: MarketingServiceKey, prepared: boolean) {
+  const id = `${customerId}_${ym}`;
+  const ref = doc(db, "marketingChecklists", id);
+  
+  let prev: any = undefined;
+  try {
+    const before = await getDoc(ref);
+    prev = before.exists() ? before.data()?.services?.[service] : undefined;
+    console.log('🧪 BEFORE setMarketingServicePrepared', {
+      id,
+      service,
+      done: prev?.done,
+      prepared: prev?.prepared,
+      full: prev
+    });
+  } catch (e) {
+    console.warn('⚠️ BEFORE getDoc failed setMarketingServicePrepared', e);
+  }
+
+  const now = Date.now();
+  const keepDone = !!prev?.done;
+  const updateData = {
+    customerId,
+    ym,
+    services: {
+      [service]: {
+        // Wichtig: Rules verlangen 'done' als bool, wenn service im Payload enthalten ist
+        done: prepared ? keepDone : false,
+        ...(prepared
+          ? (keepDone ? { doneAt: (typeof prev?.doneAt === 'number' ? prev.doneAt : now) } : {})
+          : { doneAt: deleteField() }
+        ),
+        prepared,
+        preparedAt: prepared ? now : deleteField(),
+      },
+    },
+    updatedAt: now,
+  } as any;
+  console.log('🔥 Firestore setMarketingServicePrepared:', { id, updateData });
+  await setDoc(ref, updateData, { merge: true });
+  console.log('🔥 Firestore setMarketingServicePrepared completed');
+
+  try {
+    const after = await getDoc(ref);
+    const s: any = after.exists() ? after.data()?.services?.[service] : undefined;
+    console.log('🧪 AFTER setMarketingServicePrepared', {
+      id,
+      service,
+      done: s?.done,
+      prepared: s?.prepared,
+      full: s
+    });
+  } catch (e) {
+    console.warn('⚠️ AFTER getDoc failed setMarketingServicePrepared', e);
+  }
+}
+
+export async function setMarketingServiceCompleted(customerId: string, ym: string, service: MarketingServiceKey, completed: boolean) {
+  const id = `${customerId}_${ym}`;
+  const ref = doc(db, "marketingChecklists", id);
+  
+  try {
+    const before = await getDoc(ref);
+    const s: any = before.exists() ? before.data()?.services?.[service] : undefined;
+    console.log('🧪 BEFORE setMarketingServiceCompleted', {
+      id,
+      service,
+      done: s?.done,
+      prepared: s?.prepared,
+      full: s
+    });
+  } catch (e) {
+    console.warn('⚠️ BEFORE getDoc failed setMarketingServiceCompleted', e);
+  }
+
+  const updateData: any = {
+    customerId,
+    ym,
+    services: {
+      [service]: {
+        done: completed,
+        doneAt: completed ? Date.now() : deleteField(),
+        ...(completed ? { prepared: true, preparedAt: Date.now() } : {}),
+      },
+    },
+    updatedAt: Date.now(),
+  };
+  console.log('🔥 Firestore setMarketingServiceCompleted:', { id, updateData });
+  await setDoc(ref, updateData, { merge: true });
+  console.log('🔥 Firestore setMarketingServiceCompleted completed');
+
+  try {
+    const after = await getDoc(ref);
+    const s: any = after.exists() ? after.data()?.services?.[service] : undefined;
+    console.log('🧪 AFTER setMarketingServiceCompleted', {
+      id,
+      service,
+      done: s?.done,
+      prepared: s?.prepared,
+      full: s
+    });
+  } catch (e) {
+    console.warn('⚠️ AFTER getDoc failed setMarketingServiceCompleted', e);
+  }
+}
+
+export async function setCustomMarketingServicePrepared(
+  customerId: string,
+  ym: string,
+  service: string,
+  label: string,
+  prepared: boolean
+) {
+  const id = `${customerId}_${ym}`;
+  const ref = doc(db, "marketingChecklists", id);
+  
+  try {
+    const before = await getDoc(ref);
+    const s: any = before.exists() ? (before.data()?.custom?.[service] ?? before.data()?.services?.custom?.[service]) : undefined;
+    console.log('🧪 BEFORE setCustomMarketingServicePrepared', {
+      id,
+      service,
+      done: s?.done,
+      prepared: s?.prepared,
+      full: s
+    });
+  } catch (e) {
+    console.warn('⚠️ BEFORE getDoc failed setCustomMarketingServicePrepared', e);
+  }
+
+  const updateData = {
+    customerId,
+    ym,
+    custom: {
+      [service]: {
+        label,
+        prepared,
+        preparedAt: prepared ? Date.now() : deleteField(),
+        ...(prepared ? {} : { done: false, doneAt: deleteField() }),
+      },
+    },
+    updatedAt: Date.now(),
+  } as any;
+  console.log('🔥 Firestore setCustomMarketingServicePrepared:', { id, updateData });
+  await setDoc(ref, updateData, { merge: true });
+  console.log('🔥 Firestore setCustomMarketingServicePrepared completed');
+
+  try {
+    const after = await getDoc(ref);
+    const s: any = after.exists() ? (after.data()?.custom?.[service] ?? after.data()?.services?.custom?.[service]) : undefined;
+    console.log('🧪 AFTER setCustomMarketingServicePrepared', {
+      id,
+      service,
+      done: s?.done,
+      prepared: s?.prepared,
+      full: s
+    });
+  } catch (e) {
+    console.warn('⚠️ AFTER getDoc failed setCustomMarketingServicePrepared', e);
+  }
+}
+
+export async function setCustomMarketingServiceCompleted(customerId: string, ym: string, service: string, label: string, completed: boolean) {
+  const id = `${customerId}_${ym}`;
+  const ref = doc(db, "marketingChecklists", id);
+  
+  try {
+    const before = await getDoc(ref);
+    const s: any = before.exists() ? (before.data()?.custom?.[service] ?? before.data()?.services?.custom?.[service]) : undefined;
+    console.log('🧪 BEFORE setCustomMarketingServiceCompleted', {
+      id,
+      service,
+      done: s?.done,
+      prepared: s?.prepared,
+      full: s
+    });
+  } catch (e) {
+    console.warn('⚠️ BEFORE getDoc failed setCustomMarketingServiceCompleted', e);
+  }
+
+  const updateData: any = {
+    customerId,
+    ym,
+    custom: {
+      [service]: {
+        label,
+        done: completed,
+        doneAt: completed ? Date.now() : deleteField(),
+        ...(completed ? { prepared: true, preparedAt: Date.now() } : {}),
+      },
+    },
+    updatedAt: Date.now(),
+  };
+  console.log('🔥 Firestore setCustomMarketingServiceCompleted:', { id, updateData });
+  await setDoc(ref, updateData, { merge: true });
+  console.log('🔥 Firestore setCustomMarketingServiceCompleted completed');
+
+  try {
+    const after = await getDoc(ref);
+    const s: any = after.exists() ? (after.data()?.custom?.[service] ?? after.data()?.services?.custom?.[service]) : undefined;
+    console.log('🧪 AFTER setCustomMarketingServiceCompleted', {
+      id,
+      service,
+      done: s?.done,
+      prepared: s?.prepared,
+      full: s
+    });
+  } catch (e) {
+    console.warn('⚠️ AFTER getDoc failed setCustomMarketingServiceCompleted', e);
+  }
 }

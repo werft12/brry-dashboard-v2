@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { usePathname, useRouter } from "next/navigation";
 import Shell from "@/components/layout/Shell";
+import Version from "@/components/ui/version";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, limit, query, where } from "firebase/firestore";
 import { createCustomer } from "@/lib/db";
@@ -126,6 +127,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   return (
     <Shell>
       {children}
+      <Version />
     </Shell>
   );
 }

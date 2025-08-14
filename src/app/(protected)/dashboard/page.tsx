@@ -227,12 +227,13 @@ export default function DashboardPage() {
       <h1 className="text-2xl font-semibold tracking-tight text-center sm:text-left">BRRY Dashboard</h1>
 
       {/* KPI-Karten */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <section className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <Card className="p-4">
-          <div className="flex items-start justify-between">
+          {/* Desktop Layout */}
+          <div className="hidden sm:flex items-start justify-between">
             <div>
               <div className="text-xs text-gray-400">Aktive Apotheken</div>
-              <div className="mt-1 text-2xl font-semibold text-white tracking-tight">
+              <div className="mt-1 text-xl font-semibold text-white tracking-tight">
                 {loading ? (
                   <div className="h-7 w-16 rounded bg-white/10 animate-pulse" />
                 ) : (
@@ -240,7 +241,7 @@ export default function DashboardPage() {
                 )}
               </div>
             </div>
-            <div className="ml-4">
+            <div className="ml-2 flex-shrink-0">
               {loading ? (
                 <div className="h-10 w-24 rounded bg-white/5 animate-pulse" />
               ) : (
@@ -248,14 +249,35 @@ export default function DashboardPage() {
               )}
             </div>
           </div>
-          <div className="mt-2 text-xs text-teal-300/80">Live aus Firestore</div>
+          
+          {/* Mobile Layout - Centered */}
+          <div className="sm:hidden text-center">
+            <div className="text-xs text-gray-400">Aktive Apotheken</div>
+            <div className="mt-2 flex justify-center">
+              {loading ? (
+                <div className="h-8 w-16 rounded bg-white/5 animate-pulse" />
+              ) : (
+                <Sparkline values={trends.active} width={64} height={32} stroke="#22d3ee" fill="rgba(34,211,238,0.15)" />
+              )}
+            </div>
+            <div className="mt-2 text-xl font-semibold text-white tracking-tight">
+              {loading ? (
+                <div className="h-7 w-16 rounded bg-white/10 animate-pulse mx-auto" />
+              ) : (
+                String(stats.active)
+              )}
+            </div>
+          </div>
+          
+          <div className="mt-2 text-xs text-teal-300/80 sm:text-left text-center">Live aus Firestore</div>
         </Card>
 
         <Card className="p-4">
-          <div className="flex items-start justify-between">
+          {/* Desktop Layout */}
+          <div className="hidden sm:flex items-start justify-between">
             <div>
               <div className="text-xs text-gray-400">Filialen</div>
-              <div className="mt-1 text-2xl font-semibold text-white tracking-tight">
+              <div className="mt-1 text-xl font-semibold text-white tracking-tight">
                 {loading ? (
                   <div className="h-7 w-16 rounded bg-white/10 animate-pulse" />
                 ) : (
@@ -263,7 +285,7 @@ export default function DashboardPage() {
                 )}
               </div>
             </div>
-            <div className="ml-4">
+            <div className="ml-2 flex-shrink-0">
               {loading ? (
                 <div className="h-10 w-24 rounded bg-white/5 animate-pulse" />
               ) : (
@@ -271,14 +293,35 @@ export default function DashboardPage() {
               )}
             </div>
           </div>
-          <div className="mt-2 text-xs text-sky-300/80">inkl. aller Standorte</div>
+          
+          {/* Mobile Layout - Centered */}
+          <div className="sm:hidden text-center">
+            <div className="text-xs text-gray-400">Filialen</div>
+            <div className="mt-2 flex justify-center">
+              {loading ? (
+                <div className="h-8 w-16 rounded bg-white/5 animate-pulse" />
+              ) : (
+                <Sparkline values={trends.branches} width={64} height={32} stroke="#38bdf8" fill="rgba(56,189,248,0.15)" />
+              )}
+            </div>
+            <div className="mt-2 text-xl font-semibold text-white tracking-tight">
+              {loading ? (
+                <div className="h-7 w-16 rounded bg-white/10 animate-pulse mx-auto" />
+              ) : (
+                String(stats.branches)
+              )}
+            </div>
+          </div>
+          
+          <div className="mt-2 text-xs text-sky-300/80 sm:text-left text-center">inkl. aller Standorte</div>
         </Card>
 
         <Card className="p-4">
-          <div className="flex items-start justify-between">
+          {/* Desktop Layout */}
+          <div className="hidden sm:flex items-start justify-between">
             <div>
-              <div className="text-xs text-gray-400">Monatsumsatz</div>
-              <div className="mt-1 text-2xl font-semibold text-white tracking-tight">
+              <div className="text-xs text-gray-400">Umsatz</div>
+              <div className="mt-1 text-xl font-semibold text-white tracking-tight">
                 {loading ? (
                   <div className="h-7 w-24 rounded bg-white/10 animate-pulse" />
                 ) : (
@@ -286,7 +329,7 @@ export default function DashboardPage() {
                 )}
               </div>
             </div>
-            <div className="ml-4">
+            <div className="ml-2 flex-shrink-0">
               {loading ? (
                 <div className="h-10 w-24 rounded bg-white/5 animate-pulse" />
               ) : (
@@ -294,14 +337,35 @@ export default function DashboardPage() {
               )}
             </div>
           </div>
-          <div className="mt-2 text-xs text-teal-300/80">Basis + Marketing + Extras</div>
+          
+          {/* Mobile Layout - Centered */}
+          <div className="sm:hidden text-center">
+            <div className="text-xs text-gray-400">Umsatz</div>
+            <div className="mt-2 flex justify-center">
+              {loading ? (
+                <div className="h-8 w-16 rounded bg-white/5 animate-pulse" />
+              ) : (
+                <Sparkline values={trends.revenue} width={64} height={32} stroke="#22d3ee" fill="rgba(34,211,238,0.15)" />
+              )}
+            </div>
+            <div className="mt-2 text-xl font-semibold text-white tracking-tight">
+              {loading ? (
+                <div className="h-7 w-24 rounded bg-white/10 animate-pulse mx-auto" />
+              ) : (
+                formatEUR(stats.revenue)
+              )}
+            </div>
+          </div>
+          
+          <div className="mt-2 text-xs text-teal-300/80 sm:text-left text-center">Basis + Marketing + Extras</div>
         </Card>
 
         <Card className="p-4">
-          <div className="flex items-start justify-between">
+          {/* Desktop Layout */}
+          <div className="hidden sm:flex items-start justify-between">
             <div>
               <div className="text-xs text-gray-400">Offene Onboardings</div>
-              <div className="mt-1 text-2xl font-semibold text-white tracking-tight">
+              <div className="mt-1 text-xl font-semibold text-white tracking-tight">
                 {loading ? (
                   <div className="h-7 w-16 rounded bg-white/10 animate-pulse" />
                 ) : (
@@ -309,7 +373,7 @@ export default function DashboardPage() {
                 )}
               </div>
             </div>
-            <div className="ml-4">
+            <div className="ml-2 flex-shrink-0">
               {loading ? (
                 <div className="h-10 w-24 rounded bg-white/5 animate-pulse" />
               ) : (
@@ -317,43 +381,70 @@ export default function DashboardPage() {
               )}
             </div>
           </div>
-          <div className="mt-2 text-xs text-sky-300/80">in Arbeit</div>
+          
+          {/* Mobile Layout - Centered */}
+          <div className="sm:hidden text-center">
+            <div className="text-xs text-gray-400">Offene Onboardings</div>
+            <div className="mt-2 flex justify-center">
+              {loading ? (
+                <div className="h-8 w-16 rounded bg-white/5 animate-pulse" />
+              ) : (
+                <Sparkline values={trends.onboardings} width={64} height={32} stroke="#38bdf8" fill="rgba(56,189,248,0.15)" />
+              )}
+            </div>
+            <div className="mt-2 text-xl font-semibold text-white tracking-tight">
+              {loading ? (
+                <div className="h-7 w-16 rounded bg-white/10 animate-pulse mx-auto" />
+              ) : (
+                String(openOnboardingsForExisting)
+              )}
+            </div>
+          </div>
+          
+          <div className="mt-2 text-xs text-sky-300/80 sm:text-left text-center">in Arbeit</div>
         </Card>
       </section>
 
       {/* Kosten-Breakdown */}
-      <section className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <section className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <Card className="p-4">
-          <div className="text-xs text-gray-400">Basis (Kunden)</div>
-          <div className="mt-1 text-2xl font-semibold text-white tracking-tight">
-            {loading ? "…" : formatEUR(stats.base)}
+          <div className="text-center sm:text-left">
+            <div className="text-xs text-gray-400">Basis (Kunden)</div>
+            <div className="mt-1 text-xl font-semibold text-white tracking-tight">
+              {loading ? "…" : formatEUR(stats.base)}
+            </div>
+            <div className="mt-2 text-[11px] text-gray-500">Grundgebühr pro aktivem Kunden</div>
           </div>
-          <div className="mt-2 text-[11px] text-gray-500">Fixgebühren pro aktivem Kunden</div>
         </Card>
         <Card className="p-4">
-          <div className="text-xs text-gray-400">Marketing</div>
-          <div className="mt-1 text-2xl font-semibold text-white tracking-tight">
-            {loading ? "…" : formatEUR(stats.marketing)}
+          <div className="text-center sm:text-left">
+            <div className="text-xs text-gray-400">Marketing</div>
+            <div className="mt-1 text-xl font-semibold text-white tracking-tight">
+              {loading ? "…" : formatEUR(stats.marketing)}
+            </div>
+            <div className="mt-2 text-[11px] text-gray-500">Grundausstattung + Zusatzservices</div>
           </div>
-          <div className="mt-2 text-[11px] text-gray-500">Pakete (180€ + 60€/weitere Filiale) + Zusatzservices</div>
-          
         </Card>
         <Card className="p-4">
-          <div className="text-xs text-gray-400">Onboardings</div>
-          <div className="mt-1 text-2xl font-semibold text-white tracking-tight">
-            {loading ? "…" : formatEUR(stats.onboardingBonus || 0)}
+          <div className="text-center sm:text-left">
+            <div className="text-xs text-gray-400">Onboardings</div>
+            <div className="mt-1 text-xl font-semibold text-white tracking-tight">
+              {loading ? "…" : formatEUR(stats.onboardingBonus || 0)}
+            </div>
+            <div className="mt-2 text-[11px] text-gray-500">Einmalig pro Abschluss{!loading && typeof stats.onboardingCount !== 'undefined' ? ` · ${stats.onboardingCount} Abschluss${stats.onboardingCount === 1 ? '' : 'e'}` : ''}</div>
           </div>
-          <div className="mt-2 text-[11px] text-gray-500">Einmalig pro Abschluss{!loading && typeof stats.onboardingCount !== 'undefined' ? ` · ${stats.onboardingCount} Abschluss${stats.onboardingCount === 1 ? '' : 'e'}` : ''}</div>
         </Card>
         <Card className="p-4">
-          <div className="text-xs text-gray-400">Gesamt pro Monat</div>
-          <div className="mt-1 text-2xl font-semibold text-white tracking-tight">
-            {loading ? "…" : formatEUR(stats.revenue)}
-          </div>
-          <div className="mt-3 flex items-center gap-4 text-xs text-gray-400">
-            <span className="flex items-center gap-2"><span className="inline-block h-2 w-2 rounded-full bg-teal-400" />Basis</span>
-            <span className="flex items-center gap-2"><span className="inline-block h-2 w-2 rounded-full bg-sky-400" />Marketing</span>
-            <span className="flex items-center gap-2"><span className="inline-block h-2 w-2 rounded-full bg-emerald-400" />Onboardings</span>
+          <div className="text-center sm:text-left">
+            <div className="text-xs text-gray-400">Gesamt pro Monat</div>
+            <div className="mt-1 text-xl font-semibold text-white tracking-tight">
+              {loading ? "…" : formatEUR(stats.revenue)}
+            </div>
+            <div className="mt-3 flex items-center gap-2 text-xs text-gray-400 flex-wrap justify-center sm:justify-start">
+              <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-teal-400" />Basis</span>
+              <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-sky-400" />Marketing</span>
+              <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-emerald-400" />Extras</span>
+            </div>
           </div>
         </Card>
       </section>
