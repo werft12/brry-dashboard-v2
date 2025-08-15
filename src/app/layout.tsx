@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/providers";
@@ -17,7 +17,6 @@ export const metadata: Metadata = {
   title: "BRRY Dashboard",
   description: "BRRY Admin-Dashboard",
   manifest: "/manifest.webmanifest",
-  themeColor: "#0b1220",
   applicationName: "BRRY Dashboard",
   robots: "noindex, nofollow, noarchive, nosnippet",
   icons: {
@@ -34,6 +33,10 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "BRRY Dashboard",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0b1220",
 };
 
 export default function RootLayout({
