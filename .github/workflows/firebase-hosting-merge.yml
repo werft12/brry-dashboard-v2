@@ -3,9 +3,13 @@
 
 name: Deploy to Firebase Hosting on merge
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
+permissions:
+  contents: read
+  id-token: write
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
