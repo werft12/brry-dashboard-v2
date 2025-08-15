@@ -156,10 +156,19 @@ export default function OnboardingPage() {
         <button onClick={() => setShowCreate(true)} className="h-10 px-4 rounded-md border border-white/10 bg-neutral-800 text-gray-100 hover:bg-neutral-700 shrink-0">Neue Apotheke</button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-4"><div className="text-sm text-gray-400">Apotheken im Onboarding</div><div className="text-2xl font-semibold">{kpis.onboardingCount}</div></Card>
-        <Card className="p-4"><div className="text-sm text-gray-400">Webshops in Arbeit</div><div className="text-2xl font-semibold">{kpis.webshopInArbeit}</div></Card>
-        <Card className="p-4"><div className="text-sm text-gray-400">Apps in Arbeit</div><div className="text-2xl font-semibold">{kpis.appInArbeit}</div></Card>
+      <div className="grid grid-cols-3 gap-4">
+        <Card className="h-24 flex flex-col items-center justify-center text-center">
+          <div className="text-xs leading-tight text-gray-400">Apotheken im<br />Onboarding</div>
+          <div className="text-2xl font-semibold tabular-nums">{kpis.onboardingCount}</div>
+        </Card>
+        <Card className="h-24 flex flex-col items-center justify-center text-center">
+          <div className="text-xs leading-tight text-gray-400">Webshops in<br />Arbeit</div>
+          <div className="text-2xl font-semibold tabular-nums">{kpis.webshopInArbeit}</div>
+        </Card>
+        <Card className="h-24 flex flex-col items-center justify-center text-center">
+          <div className="text-xs leading-tight text-gray-400">Apps in<br />Arbeit</div>
+          <div className="text-2xl font-semibold tabular-nums">{kpis.appInArbeit}</div>
+        </Card>
       </div>
 
       {loading && (

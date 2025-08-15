@@ -317,17 +317,17 @@ export default function MarketingPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-3 gap-4">
-        <Card className="px-8 py-3 text-center">
-          <div className="text-xs text-gray-400">Apotheken mit Marketing</div>
-          <div className="text-2xl font-semibold">{activeCustomers.length}</div>
+        <Card className="h-24 flex flex-col items-center justify-center text-center">
+          <div className="text-xs leading-tight text-gray-400">Apotheken<br />mit Marketing</div>
+          <div className="text-2xl font-semibold tabular-nums">{activeCustomers.length}</div>
         </Card>
-        <Card className="px-8 py-3 text-center">
+        <Card className="h-24 flex flex-col items-center justify-center text-center">
           <div className="text-xs text-gray-400">Aktueller Fortschritt</div>
-          <div className="text-2xl font-semibold">{kpis.progress}%</div>
+          <div className="text-2xl font-semibold tabular-nums">{kpis.progress}%</div>
         </Card>
-        <Card className="px-8 py-3 text-center">
+        <Card className="h-24 flex flex-col items-center justify-center text-center">
           <div className="text-xs leading-tight text-gray-400">Offene<br />Aufgaben</div>
-          <div className="text-2xl font-semibold">{kpis.openTasks}</div>
+          <div className="text-2xl font-semibold tabular-nums">{kpis.openTasks}</div>
         </Card>
       </div>
 

@@ -1,6 +1,6 @@
 # BRRY Dashboard – Vollständiger Projektplan
 
-Stand: 2025-08-14 19:41 (CEST)
+Stand: 2025-08-15 10:55 (CEST)
 
 ## Projektziel
 Funktionierendes Kunden- und Service-Dashboard für Apotheken mit Marketing-Checklisten, Onboarding-Prozess, Umsatz-Tracking und moderner UI/UX.
@@ -211,6 +211,34 @@ Für Custom‑Services analog unter `custom: { [service]: { label, ... } }`.
 - Cross‑Service‑Bugs behoben: Punktgenaue Feld‑Updates je Service; keine Stomping‑Merges.
 - Kritischer Fix: Dot‑Pfade in `setDoc` durch verschachtelte Objekte ersetzt; Persistenz und Reload‑Konsistenz damit stabil.
 - UI/UX wiederhergestellt: Monatsnavigation, Kunden, KPIs, gestapelte Progress‑Bars.
+
+### Release 2.0.2 (2025-08-15)
+- Next.js Warnung behoben: `themeColor` von `metadata` nach `export const viewport` verschoben (`src/app/layout.tsx`).
+- Statischer Export aktiviert: `output: 'export'` in `next.config.ts`; Middleware deaktiviert und Security‑Header nach `firebase.json` verschoben.
+- KPI‑Design Marketing: 3 Boxen zentriert (vertikal/horizontal), zweizeiliger Titel „Apotheken<br />mit Marketing“ (`app/(protected)/marketing/page.tsx`).
+- KPI‑Design Onboarding: 3 Boxen nebeneinander, Inhalt zentriert, zweizeilige Labels („… im<br />Onboarding“, „… in<br />Arbeit“) (`app/(protected)/onboarding/page.tsx`).
+- Version erhöht auf 2.0.2.
+- Deploy via GitHub Actions → Firebase Hosting erfolgreich.
+
+Änderungen (Dateien):
+- `src/app/layout.tsx`
+- `next.config.ts`
+- `src/middleware.ts`
+- `firebase.json`
+- `src/app/(protected)/marketing/page.tsx`
+- `src/app/(protected)/onboarding/page.tsx`
+
+Ausgeführte Schritte:
+1. Codeänderungen wie oben beschrieben.
+2. Version bump auf 2.0.2 in `package.json`.
+3. Commit & Push, CI/CD ausgelöst.
+
+Deploy‑Kommandos:
+```bash
+git add -A
+git commit -m "release(2.0.2): export build, headers to firebase.json, KPI boxes centered (marketing & onboarding), viewport themeColor"
+git push
+```
 
 ## Status
 Produktiv: 3‑Zustände‑Checkboxen funktionieren stabil, Firestore‑Sync ist konsistent, Reload‑persistiert.
