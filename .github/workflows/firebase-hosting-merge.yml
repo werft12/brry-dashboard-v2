@@ -24,10 +24,15 @@ jobs:
           npm run build
           # Ensure static export exists
           if [ ! -f out/index.html ]; then
-            echo "out export missing: index.html not found"
-            ls -la out/ || true
+            echo "❌ CRITICAL: out/index.html not found after build"
+            ls -la out/ || echo "out/ directory does not exist"
             exit 1
           fi
+          echo "✅ Static export verified: out/index.html exists"
+          echo "📁 Build artifacts:"
+          ls -la out/ | head -20
+          echo "📊 Build size:"
+          du -sh out/
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
@@ -35,3 +40,7 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BRRY_DASHBOARD_V2 }}
           channelId: live
           projectId: brry-dashboard-v2
+          entryPoint: .
+        env:
+          # Explicitly disable experiments that might interfere
+          FIREBASE_CLI_EXPERIMENTS: ""
