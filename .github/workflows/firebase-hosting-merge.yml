@@ -33,14 +33,20 @@ jobs:
           ls -la out/ | head -20
           echo "📊 Build size:"
           du -sh out/
-      - name: Deploy to Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BRRY_DASHBOARD_V2 }}
-          channelId: live
-          projectId: brry-dashboard-v2
-          entryPoint: .
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+      - name: Authenticate with Firebase
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_BRRY_DASHBOARD_V2 }}' > /tmp/firebase-key.json
+          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-key.json
+          firebase use brry-dashboard-v2
         env:
-          # Explicitly disable experiments that might interfere
-          FIREBASE_CLI_EXPERIMENTS: ""
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-key.json
+      - name: Deploy to Firebase Hosting (Direct)
+        run: |
+          echo "🚀 Deploying static files directly to Firebase Hosting"
+          echo "📁 Contents of out/ directory:"
+          ls -la out/
+          firebase deploy --only hosting --project brry-dashboard-v2 --non-interactive
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-key.json
