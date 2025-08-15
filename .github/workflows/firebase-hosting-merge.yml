@@ -22,7 +22,12 @@ jobs:
           NEXT_TELEMETRY_DISABLED: 1
         run: |
           npm run build
-          ls -la out/ || echo "No out directory found"
+          # Ensure static export exists
+          if [ ! -f out/index.html ]; then
+            echo "out export missing: index.html not found"
+            ls -la out/ || true
+            exit 1
+          fi
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
@@ -30,6 +35,3 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BRRY_DASHBOARD_V2 }}
           channelId: live
           projectId: brry-dashboard-v2
-        env:
-          FIREBASE_CLI_EXPERIMENTS: webframeworks
-          FIREBASE_CLI_PREVIEWS: hostingchannels
